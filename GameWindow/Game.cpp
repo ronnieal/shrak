@@ -1,8 +1,18 @@
 #include "Game.h"
 #include "TextureManager.h"
+#include "GameObject.h"
+#include "Map.h"
+#include "ECS.h"
+#include "Components.h"
 
-SDL_Texture *playerTex, *background;
+GameObject *shrek, *farquaad;
+SDL_Renderer* Game::renderer = nullptr;
+Map *map;
 SDL_Rect srcR, destR;
+
+Manager manager;
+auto& newPlayer(manager.addEntity());
+
 Game::Game()
 {
 
@@ -35,8 +45,16 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
 			std::cout << "renderer created" << std::endl;
 		}
 
-		playerTex = TextureManager::loadTexture("graphics/shrak.png", renderer);	
-		background = TextureManager::loadTexture("graphics/swamp.png", renderer);
+		shrek = new GameObject("graphics/shrak.png", 0,0,5);
+		farquaad = new GameObject("graphics/farquaad.png", 0, 400, 2);
+
+		newPlayer.addComponent<PositionComponent>();
+	
+
+		map = new Map();
+		newPlayer.getComponent<PositionComponent>().setPos(500,500);
+
+
 		isRunning = true;
 	}
 	else
@@ -60,19 +78,21 @@ void Game::handleEvents()
 }
 void Game::update()
 {
-	count++;
-
-	destR.h = 78*5;
-	destR.w = 68*5;
-	destR.x = count/10;
-
-	std::cout << count << std::endl;
+	shrek->update();
+	farquaad->update();
+	manager.update();
+	std::cout << newPlayer.getComponent<PositionComponent>().x() << ", " << newPlayer.getComponent<PositionComponent>().y() << std::endl;
+	
 }
 void Game::render()
 {
 	SDL_RenderClear(renderer);
-	SDL_RenderCopy(renderer, background, NULL, NULL);
-	SDL_RenderCopy(renderer, playerTex, NULL, &destR);
+	
+	map->drawMap();
+	shrek->render();
+	farquaad->render();
+
+
 	SDL_RenderPresent(renderer);
 }
 void Game::clean()
